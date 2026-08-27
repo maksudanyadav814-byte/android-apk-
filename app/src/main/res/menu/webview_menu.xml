@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_open_browser"
+        android:title="Open in Browser"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_share"
+        android:title="Share"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_reload"
+        android:title="Reload"
+        android:showAsAction="never" />
+</menu>

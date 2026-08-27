@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.FastStore" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorPrimaryDark">@color/brand_dark</item>
+        <item name="colorAccent">@color/brand_secondary</item>
+        <item name="android:windowBackground">@color/brand_bg</item>
+    </style>
+</resources>

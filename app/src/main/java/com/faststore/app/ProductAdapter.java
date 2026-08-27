@@ -2,12 +2,11 @@ package com.faststore.app;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,17 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
-import org.json.JSONArray;
-
 import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
 
     private Context context;
     private List<Product> productList;
-
-    // Direct Hostinger Affiliate Link Redirection URL
-    private static final String REDIRECT_URL_BASE = "https://powderblue-sparrow-788374.hostingersite.com/android/go?id=";
 
     public ProductAdapter(Context context, List<Product> productList) {
         this.context = context;
@@ -47,37 +41,51 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
         holder.txtName.setText(product.getName());
 
-        // Default currency display (no conversion applied)
         String currency = (product.getCurrencyId() != null && product.getCurrencyId().equalsIgnoreCase("INR")) ? "₹" : "$";
         holder.txtPrice.setText(currency + product.getPrice());
 
-        // Load image using Glide library
         Glide.with(context)
                 .load(product.getPicture())
                 .placeholder(android.R.drawable.ic_menu_gallery)
                 .into(holder.imgThumbnail);
 
-        // Save item to local device storage (Cart without login system)
-        holder.btnAddToCart.setOnClickListener(v -> {
-            SharedPreferences prefs = context.getSharedPreferences("LocalCart", Context.MODE_PRIVATE);
-            String cartStr = prefs.getString("cart_items", "[]");
-            try {
-                JSONArray cartArr = new JSONArray(cartStr);
-                cartArr.put(product.getId());
-                prefs.edit().putString("cart_items", cartArr.toString()).apply();
-                Toast.makeText(context, "Added to Cart!", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        holder.btnFavorite.setImageResource(
+                CartManager.isFavorite(context, product.getId())
+                        ? R.drawable.ic_heart_filled
+                        : R.drawable.ic_heart_outline
+        );
+
+        holder.btnFavorite.setOnClickListener(v -> {
+            CartManager.toggleFavorite(context, product.getId());
+            holder.btnFavorite.setImageResource(
+                    CartManager.isFavorite(context, product.getId())
+                            ? R.drawable.ic_heart_filled
+                            : R.drawable.ic_heart_outline
+            );
         });
 
-        // Open external browser for affiliate link redirection
-        holder.btnBuyNow.setOnClickListener(v -> {
-            String finalUrl = REDIRECT_URL_BASE + Uri.encode(product.getId());
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(finalUrl));
-            browserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(browserIntent);
+        holder.btnAddToCart.setOnClickListener(v -> {
+            CartManager.addToCart(context, product);
+            Toast.makeText(context, "Added to Cart! 🛒", Toast.LENGTH_SHORT).show();
         });
+
+        holder.btnBuyNow.setOnClickListener(v -> openBuyNow(product));
+
+        holder.itemView.setOnClickListener(v -> openProductDetail(product));
+    }
+
+    private void openProductDetail(Product product) {
+        Intent intent = new Intent(context, ProductDetailActivity.class);
+        intent.putExtra("product", product);
+        context.startActivity(intent);
+    }
+
+    private void openBuyNow(Product product) {
+        String url = "https://powderblue-sparrow-788374.hostingersite.com/android/go?id=" + product.getId();
+        Intent intent = new Intent(context, WebViewActivity.class);
+        intent.putExtra("url", url);
+        intent.putExtra("title", product.getName());
+        context.startActivity(intent);
     }
 
     @Override
@@ -87,12 +95,14 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
     public static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView imgThumbnail;
+        ImageButton btnFavorite;
         TextView txtName, txtPrice;
         Button btnAddToCart, btnBuyNow;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
             imgThumbnail = itemView.findViewById(R.id.imgProduct);
+            btnFavorite = itemView.findViewById(R.id.btnFavorite);
             txtName = itemView.findViewById(R.id.txtProductName);
             txtPrice = itemView.findViewById(R.id.txtProductPrice);
             btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
