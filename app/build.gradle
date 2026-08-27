@@ -5,7 +5,7 @@ plugins {
 android {
     namespace 'com.faststore.app'
     compileSdk 34
-
+ 
     defaultConfig {
         applicationId "com.faststore.app"
         minSdk 21
