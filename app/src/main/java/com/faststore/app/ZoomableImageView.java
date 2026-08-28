@@ -55,7 +55,7 @@ public class ZoomableImageView extends AppCompatImageView {
         }
     }
 
-    private class GestureListener extends GestureDetector.SimpleOnDoubleTapListener {
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             if (scale > MIN_SCALE) {
