@@ -1,8 +1,10 @@
 package com.faststore.app;
 
+import android.Manifest;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -11,6 +13,7 @@ import android.view.MenuItem;
 import android.webkit.CookieManager;
 import android.webkit.PermissionRequest;
 import android.webkit.URLUtil;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -18,9 +21,12 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 /**
  * Loads product / buy-now links inside the app via WebView.
@@ -29,16 +35,47 @@ import androidx.appcompat.widget.Toolbar;
  *   tel:, mailto:, intent:// UPI/payment links) open in their own external app.
  * - Three-dot menu lets the user force-open the current page in an external browser or share it.
  * - Downloads (files/media) are handed off to the system DownloadManager.
+ * - File upload / camera / voice input requests from web pages (e.g. "upload photo",
+ *   "scan document", checkout forms) are supported like a real shopping app.
  */
 public class WebViewActivity extends AppCompatActivity {
 
     private WebView webView;
     private String currentUrl;
+    private ValueCallback<Uri[]> filePathCallback;
+
+    private final ActivityResultLauncher<Intent> fileChooserLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (filePathCallback == null) return;
+                Uri[] results = null;
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String dataString = result.getData().getDataString();
+                    if (dataString != null) {
+                        results = new Uri[]{Uri.parse(dataString)};
+                    } else if (result.getData().getClipData() != null) {
+                        int count = result.getData().getClipData().getItemCount();
+                        results = new Uri[count];
+                        for (int i = 0; i < count; i++) {
+                            results[i] = result.getData().getClipData().getItemAt(i).getUri();
+                        }
+                    }
+                }
+                filePathCallback.onReceiveValue(results);
+                filePathCallback = null;
+            });
+
+    private final ActivityResultLauncher<String[]> permissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(),
+            grantResults -> { /* WebView will re-check on next request */ });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
+
+        // Ask for camera + mic up front so WebView permission grants work smoothly
+        requestRuntimePermissionsIfNeeded();
 
         Toolbar toolbar = findViewById(R.id.toolbarWeb);
         toolbar.setNavigationOnClickListener(v -> {
@@ -84,8 +121,22 @@ public class WebViewActivity extends AppCompatActivity {
 
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
-                // Allow camera/mic/media access requested by web content (e.g. media players)
+                // Allow camera/mic/media access requested by web content (e.g. media players, voice search)
                 runOnUiThread(() -> request.grant(request.getResources()));
+            }
+
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> callback, FileChooserParams params) {
+                filePathCallback = callback;
+                try {
+                    Intent intent = params.createIntent();
+                    fileChooserLauncher.launch(intent);
+                } catch (Exception e) {
+                    filePathCallback = null;
+                    Toast.makeText(WebViewActivity.this, "Cannot open file chooser", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                return true;
             }
         });
 
@@ -166,6 +217,22 @@ public class WebViewActivity extends AppCompatActivity {
             startActivity(intent);
         } catch (ActivityNotFoundException | java.net.URISyntaxException e) {
             Toast.makeText(this, "No app found to open this link", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void requestRuntimePermissionsIfNeeded() {
+        java.util.List<String> toRequest = new java.util.ArrayList<>();
+        String[] needed = {
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
+        };
+        for (String perm : needed) {
+            if (ContextCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
+                toRequest.add(perm);
+            }
+        }
+        if (!toRequest.isEmpty()) {
+            permissionLauncher.launch(toRequest.toArray(new String[0]));
         }
     }
 

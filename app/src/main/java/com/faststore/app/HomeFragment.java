@@ -120,20 +120,7 @@ public class HomeFragment extends Fragment {
                     try {
                         if (response.has("products")) {
                             JSONArray jsonArray = response.getJSONArray("products");
-
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject obj = jsonArray.getJSONObject(i);
-                                Product p = new Product(
-                                        obj.getString("id"),
-                                        obj.getString("name"),
-                                        obj.optString("price", "0.00"),
-                                        obj.optString("picture", ""),
-                                        obj.optString("currencyId", "$"),
-                                        obj.optString("category", "General"),
-                                        obj.optString("description", "")
-                                );
-                                allLoaded.add(p);
-                            }
+                            allLoaded.addAll(ProductParser.parseList(jsonArray));
 
                             DataCache.addAll(allLoaded);
                             categoryAdapter = new CategoryAdapter(DataCache.getCategories(), selectedCategory, category -> {

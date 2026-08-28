@@ -11,48 +11,71 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles local (no-login) Cart + Wishlist(favorites) storage using SharedPreferences.
+ * Handles local (no-login) Cart + Wishlist(Liked) storage using SharedPreferences.
  */
 public class CartManager {
 
     private static final String PREF_CART = "LocalCart";
     private static final String PREF_FAV = "LocalFavorites";
     private static final String KEY_CART_ITEMS = "cart_items";
-    private static final String KEY_FAV_IDS = "fav_ids";
+    private static final String KEY_FAV_ITEMS = "fav_items";
 
     // ---------- CART ----------
 
     public static void addToCart(Context ctx, Product p) {
         try {
-            JSONArray arr = getCartArray(ctx);
-            // avoid duplicate entries
+            JSONArray arr = getArray(ctx, PREF_CART, KEY_CART_ITEMS);
             for (int i = 0; i < arr.length(); i++) {
                 if (arr.getJSONObject(i).getString("id").equals(p.getId())) return;
             }
             arr.put(toJson(p));
-            saveCartArray(ctx, arr);
+            saveArray(ctx, PREF_CART, KEY_CART_ITEMS, arr);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
     public static void removeFromCart(Context ctx, String productId) {
-        try {
-            JSONArray arr = getCartArray(ctx);
-            JSONArray newArr = new JSONArray();
-            for (int i = 0; i < arr.length(); i++) {
-                JSONObject obj = arr.getJSONObject(i);
-                if (!obj.getString("id").equals(productId)) newArr.put(obj);
-            }
-            saveCartArray(ctx, newArr);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        removeFromArray(ctx, PREF_CART, KEY_CART_ITEMS, productId);
     }
 
     public static boolean isInCart(Context ctx, String productId) {
+        return containsId(ctx, PREF_CART, KEY_CART_ITEMS, productId);
+    }
+
+    public static List<Product> getCartItems(Context ctx) {
+        return getItems(ctx, PREF_CART, KEY_CART_ITEMS);
+    }
+
+    // ---------- FAVORITES / LIKED ----------
+
+    public static void toggleFavorite(Context ctx, Product p) {
+        if (isFavorite(ctx, p.getId())) {
+            removeFromArray(ctx, PREF_FAV, KEY_FAV_ITEMS, p.getId());
+        } else {
+            try {
+                JSONArray arr = getArray(ctx, PREF_FAV, KEY_FAV_ITEMS);
+                arr.put(toJson(p));
+                saveArray(ctx, PREF_FAV, KEY_FAV_ITEMS, arr);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static boolean isFavorite(Context ctx, String productId) {
+        return containsId(ctx, PREF_FAV, KEY_FAV_ITEMS, productId);
+    }
+
+    public static List<Product> getFavoriteItems(Context ctx) {
+        return getItems(ctx, PREF_FAV, KEY_FAV_ITEMS);
+    }
+
+    // ---------- shared helpers ----------
+
+    private static boolean containsId(Context ctx, String prefName, String key, String productId) {
         try {
-            JSONArray arr = getCartArray(ctx);
+            JSONArray arr = getArray(ctx, prefName, key);
             for (int i = 0; i < arr.length(); i++) {
                 if (arr.getJSONObject(i).getString("id").equals(productId)) return true;
             }
@@ -62,10 +85,24 @@ public class CartManager {
         return false;
     }
 
-    public static List<Product> getCartItems(Context ctx) {
+    private static void removeFromArray(Context ctx, String prefName, String key, String productId) {
+        try {
+            JSONArray arr = getArray(ctx, prefName, key);
+            JSONArray newArr = new JSONArray();
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject obj = arr.getJSONObject(i);
+                if (!obj.getString("id").equals(productId)) newArr.put(obj);
+            }
+            saveArray(ctx, prefName, key, newArr);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static List<Product> getItems(Context ctx, String prefName, String key) {
         List<Product> list = new ArrayList<>();
         try {
-            JSONArray arr = getCartArray(ctx);
+            JSONArray arr = getArray(ctx, prefName, key);
             for (int i = 0; i < arr.length(); i++) {
                 list.add(fromJson(arr.getJSONObject(i)));
             }
@@ -75,35 +112,15 @@ public class CartManager {
         return list;
     }
 
-    private static JSONArray getCartArray(Context ctx) throws JSONException {
-        SharedPreferences prefs = ctx.getSharedPreferences(PREF_CART, Context.MODE_PRIVATE);
-        return new JSONArray(prefs.getString(KEY_CART_ITEMS, "[]"));
+    private static JSONArray getArray(Context ctx, String prefName, String key) throws JSONException {
+        SharedPreferences prefs = ctx.getSharedPreferences(prefName, Context.MODE_PRIVATE);
+        return new JSONArray(prefs.getString(key, "[]"));
     }
 
-    private static void saveCartArray(Context ctx, JSONArray arr) {
-        SharedPreferences prefs = ctx.getSharedPreferences(PREF_CART, Context.MODE_PRIVATE);
-        prefs.edit().putString(KEY_CART_ITEMS, arr.toString()).apply();
+    private static void saveArray(Context ctx, String prefName, String key, JSONArray arr) {
+        SharedPreferences prefs = ctx.getSharedPreferences(prefName, Context.MODE_PRIVATE);
+        prefs.edit().putString(key, arr.toString()).apply();
     }
-
-    // ---------- FAVORITES / WISHLIST ----------
-
-    public static void toggleFavorite(Context ctx, String productId) {
-        SharedPreferences prefs = ctx.getSharedPreferences(PREF_FAV, Context.MODE_PRIVATE);
-        java.util.Set<String> favs = new java.util.HashSet<>(prefs.getStringSet(KEY_FAV_IDS, new java.util.HashSet<>()));
-        if (favs.contains(productId)) {
-            favs.remove(productId);
-        } else {
-            favs.add(productId);
-        }
-        prefs.edit().putStringSet(KEY_FAV_IDS, favs).apply();
-    }
-
-    public static boolean isFavorite(Context ctx, String productId) {
-        SharedPreferences prefs = ctx.getSharedPreferences(PREF_FAV, Context.MODE_PRIVATE);
-        return prefs.getStringSet(KEY_FAV_IDS, new java.util.HashSet<>()).contains(productId);
-    }
-
-    // ---------- JSON helpers ----------
 
     private static JSONObject toJson(Product p) throws JSONException {
         JSONObject obj = new JSONObject();

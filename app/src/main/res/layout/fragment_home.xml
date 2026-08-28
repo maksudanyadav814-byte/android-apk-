@@ -5,33 +5,17 @@
     android:orientation="vertical"
     android:background="@color/brand_bg">
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="@color/brand_white"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingTop="14dp"
+        android:paddingTop="8dp"
         android:paddingBottom="10dp"
-        android:elevation="3dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🛍️ FastStore"
-            android:textColor="@color/brand_dark"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="Deals just for you, fresh daily 🔥"
-            android:textColor="@color/brand_muted"
-            android:textSize="12sp" />
-    </LinearLayout>
+        android:text="Deals just for you, fresh daily 🔥"
+        android:textColor="@color/brand_muted"
+        android:textSize="12sp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/categoryRecycler"

@@ -40,6 +40,14 @@ public class RelatedProductAdapter extends RecyclerView.Adapter<RelatedProductAd
         holder.price.setText(currency + p.getPrice());
         Glide.with(context).load(p.getPicture()).placeholder(android.R.drawable.ic_menu_gallery).into(holder.img);
 
+        int discount = p.getDiscountPercent();
+        if (discount > 0) {
+            holder.discount.setVisibility(View.VISIBLE);
+            holder.discount.setText(discount + "% OFF");
+        } else {
+            holder.discount.setVisibility(View.GONE);
+        }
+
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ProductDetailActivity.class);
             intent.putExtra("product", p);
@@ -54,13 +62,14 @@ public class RelatedProductAdapter extends RecyclerView.Adapter<RelatedProductAd
 
     public static class VH extends RecyclerView.ViewHolder {
         ImageView img;
-        TextView name, price;
+        TextView name, price, discount;
 
         public VH(@NonNull View itemView) {
             super(itemView);
             img = itemView.findViewById(R.id.imgRelated);
             name = itemView.findViewById(R.id.txtRelatedName);
             price = itemView.findViewById(R.id.txtRelatedPrice);
+            discount = itemView.findViewById(R.id.txtRelatedDiscount);
         }
     }
 }

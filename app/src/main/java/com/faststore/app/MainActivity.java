@@ -1,8 +1,13 @@
 package com.faststore.app;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -17,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.mainToolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
 
@@ -49,5 +58,41 @@ public class MainActivity extends AppCompatActivity {
             if (f == target) ft.show(f); else ft.hide(f);
         }
         ft.commit();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        String asset = null;
+        String title = null;
+
+        if (id == R.id.action_privacy) {
+            asset = "privacy_policy.html";
+            title = "Privacy Policy";
+        } else if (id == R.id.action_terms) {
+            asset = "terms_conditions.html";
+            title = "Terms & Conditions";
+        } else if (id == R.id.action_contact) {
+            asset = "contact_us.html";
+            title = "Contact Us";
+        } else if (id == R.id.action_about) {
+            asset = "about.html";
+            title = "About FastStore";
+        }
+
+        if (asset != null) {
+            Intent intent = new Intent(this, StaticPageActivity.class);
+            intent.putExtra("asset", asset);
+            intent.putExtra("title", title);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

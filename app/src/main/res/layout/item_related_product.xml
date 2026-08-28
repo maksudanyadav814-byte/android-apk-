@@ -19,9 +19,9 @@
         <ImageView
             android:id="@+id/imgRelated"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="110dp"
             android:background="#F1F5F9"
-            android:scaleType="centerInside" />
+            android:scaleType="centerCrop" />
 
         <TextView
             android:id="@+id/txtRelatedName"
@@ -42,5 +42,18 @@
             android:textColor="@color/brand_price"
             android:textSize="12sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtRelatedDiscount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/bg_chip_selected"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:textColor="@android:color/white"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -44,6 +44,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         String currency = (product.getCurrencyId() != null && product.getCurrencyId().equalsIgnoreCase("INR")) ? "₹" : "$";
         holder.txtPrice.setText(currency + product.getPrice());
 
+        int discount = product.getDiscountPercent();
+        if (discount > 0 && product.getOldPrice() != null) {
+            holder.txtOldPrice.setVisibility(View.VISIBLE);
+            holder.txtOldPrice.setText(currency + product.getOldPrice());
+            holder.txtOldPrice.setPaintFlags(holder.txtOldPrice.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+            holder.txtDiscountBadge.setVisibility(View.VISIBLE);
+            holder.txtDiscountBadge.setText(discount + "% OFF");
+        } else {
+            holder.txtOldPrice.setVisibility(View.GONE);
+            holder.txtDiscountBadge.setVisibility(View.GONE);
+        }
+
         Glide.with(context)
                 .load(product.getPicture())
                 .placeholder(android.R.drawable.ic_menu_gallery)
@@ -56,7 +68,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         );
 
         holder.btnFavorite.setOnClickListener(v -> {
-            CartManager.toggleFavorite(context, product.getId());
+            CartManager.toggleFavorite(context, product);
             holder.btnFavorite.setImageResource(
                     CartManager.isFavorite(context, product.getId())
                             ? R.drawable.ic_heart_filled
@@ -96,7 +108,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView imgThumbnail;
         ImageButton btnFavorite;
-        TextView txtName, txtPrice;
+        TextView txtName, txtPrice, txtOldPrice, txtDiscountBadge;
         Button btnAddToCart, btnBuyNow;
 
         public ProductViewHolder(@NonNull View itemView) {
@@ -105,6 +117,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             btnFavorite = itemView.findViewById(R.id.btnFavorite);
             txtName = itemView.findViewById(R.id.txtProductName);
             txtPrice = itemView.findViewById(R.id.txtProductPrice);
+            txtOldPrice = itemView.findViewById(R.id.txtOldPrice);
+            txtDiscountBadge = itemView.findViewById(R.id.txtDiscountBadge);
             btnAddToCart = itemView.findViewById(R.id.btnAddToCart);
             btnBuyNow = itemView.findViewById(R.id.btnBuyNow);
         }

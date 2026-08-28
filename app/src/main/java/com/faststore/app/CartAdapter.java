@@ -25,11 +25,17 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
     private Context context;
     private List<Product> items;
     private OnCartChange onCartChange;
+    private boolean likedMode;
 
-    public CartAdapter(Context context, List<Product> items, OnCartChange onCartChange) {
+    public CartAdapter(Context context, List<Product> items, OnCartChange onCartChange, boolean likedMode) {
         this.context = context;
         this.items = items;
         this.onCartChange = onCartChange;
+        this.likedMode = likedMode;
+    }
+
+    public void setLikedMode(boolean likedMode) {
+        this.likedMode = likedMode;
     }
 
     @NonNull
@@ -47,6 +53,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
         holder.price.setText(currency + p.getPrice());
         Glide.with(context).load(p.getPicture()).placeholder(android.R.drawable.ic_menu_gallery).into(holder.img);
 
+        if (p.getDiscountPercent() > 0 && p.getOldPrice() != null) {
+            holder.oldPrice.setVisibility(View.VISIBLE);
+            holder.oldPrice.setText(currency + p.getOldPrice());
+            holder.oldPrice.setPaintFlags(holder.oldPrice.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+        } else {
+            holder.oldPrice.setVisibility(View.GONE);
+        }
+
         holder.buyNow.setOnClickListener(v -> {
             String url = "https://powderblue-sparrow-788374.hostingersite.com/android/go?id=" + p.getId();
             Intent intent = new Intent(context, WebViewActivity.class);
@@ -55,8 +69,18 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
             context.startActivity(intent);
         });
 
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, ProductDetailActivity.class);
+            intent.putExtra("product", p);
+            context.startActivity(intent);
+        });
+
         holder.remove.setOnClickListener(v -> {
-            CartManager.removeFromCart(context, p.getId());
+            if (likedMode) {
+                CartManager.toggleFavorite(context, p);
+            } else {
+                CartManager.removeFromCart(context, p.getId());
+            }
             int pos = holder.getAdapterPosition();
             if (pos != RecyclerView.NO_POSITION) {
                 items.remove(pos);
@@ -73,7 +97,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
 
     public static class VH extends RecyclerView.ViewHolder {
         ImageView img;
-        TextView name, price;
+        TextView name, price, oldPrice;
         ImageButton remove;
         android.widget.Button buyNow;
 
@@ -82,6 +106,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
             img = itemView.findViewById(R.id.imgCartProduct);
             name = itemView.findViewById(R.id.txtCartName);
             price = itemView.findViewById(R.id.txtCartPrice);
+            oldPrice = itemView.findViewById(R.id.txtCartOldPrice);
             remove = itemView.findViewById(R.id.btnRemoveFromCart);
             buyNow = itemView.findViewById(R.id.btnCartBuyNow);
         }

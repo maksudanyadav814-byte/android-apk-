@@ -9,12 +9,36 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/brand_white"
-        android:padding="16dp"
-        android:text="🛒 My Cart"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="6dp"
+        android:text="🛍️ My Bag"
         android:textColor="@color/brand_dark"
         android:textSize="20sp"
-        android:textStyle="bold"
-        android:elevation="3dp" />
+        android:textStyle="bold" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/cartTabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/brand_white"
+        android:elevation="3dp"
+        app:tabIndicatorColor="@color/brand_primary"
+        app:tabSelectedTextColor="@color/brand_primary"
+        app:tabTextColor="@color/brand_muted"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛒 Cart" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❤️ Liked" />
+    </com.google.android.material.tabs.TabLayout>
 
     <TextView
         android:id="@+id/txtCartEmpty"
