@@ -34,3 +34,4 @@ jobs:
         with:
           name: FastStore-Native-App
           path: app/build/outputs/apk/debug/app-debug.apk
+ 
