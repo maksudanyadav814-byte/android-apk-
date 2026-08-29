@@ -4,11 +4,10 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <com.faststore.app.ZoomableImageView
-        android:id="@+id/zoomImageView"
+    <FrameLayout
+        android:id="@+id/zoomImageContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:contentDescription="Product image" />
+        android:layout_height="match_parent" />
 
     <ImageButton
         android:id="@+id/btnCloseZoom"

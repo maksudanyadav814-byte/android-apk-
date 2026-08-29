@@ -45,23 +45,23 @@
         </activity>
 
         <activity
-            android:name=".ProductDetailActivity"
+            android:name=".MainActivity$ProductDetailActivity"
             android:exported="false"
             android:configChanges="orientation|keyboardHidden|screenSize" />
 
         <activity
-            android:name=".WebViewActivity"
+            android:name=".MainActivity$WebViewActivity"
             android:exported="false"
             android:configChanges="orientation|keyboardHidden|screenSize" />
 
         <activity
-            android:name=".ZoomImageActivity"
+            android:name=".MainActivity$ZoomImageActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:configChanges="orientation|keyboardHidden|screenSize" />
 
         <activity
-            android:name=".StaticPageActivity"
+            android:name=".MainActivity$StaticPageActivity"
             android:exported="false"
             android:configChanges="orientation|keyboardHidden|screenSize" />
 
